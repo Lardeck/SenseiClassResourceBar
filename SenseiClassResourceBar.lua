@@ -31,19 +31,22 @@ local commonDefaults = {
     foregroundStyle = "Fade Left",
 }
 
-local availableFonts = {
+-- Available font styles
+local fontStyles = {
     { text = "Fonts\\FRIZQT__.TTF" },
     { text = "Fonts\\ARIALN.TTF" },
     { text = "Fonts\\MORPHEUS.TTF" },
     { text = "Fonts\\SKURRI.TTF" },
 }
 
-local availableOutlines = {
+-- Available outline styles
+local outlineStyles = {
     { text = "NONE" },
     { text = "OUTLINE" },
     { text = "THICKOUTLINE" },
 }
 
+-- Available mask and border styles
 local maskAndBorderStyles = {
     ["Thin"] = {
         mask = "Interface\\AddOns\\SenseiClassResourceBar\\Textures\\BarBorders\\thin-mask.png",
@@ -73,6 +76,7 @@ for styleName, _ in pairs(maskAndBorderStyles) do
     table.insert(availableMaskAndBorderStyles, { text = styleName })
 end
 
+-- Available background styles
 local backgroundStyles = {
     ["Semi-transparent"] = { type = "color", r = 0, g = 0, b = 0, a = 0.5 },
     ["Solid Light Grey"] = { type = "texture", value = "Interface\\AddOns\\SenseiClassResourceBar\\Textures\\BarBackgrounds\\bevelled.png" },
@@ -84,6 +88,7 @@ for name, _ in pairs(backgroundStyles) do
     table.insert(availableBackgroundStyles, { text = name })
 end
 
+-- Available foreground styles
 local foregroundStyles = {
     ["Fade Left"] = "Interface\\AddOns\\SenseiClassResourceBar\\Textures\\BarForegrounds\\fade-left.png",
     ["Fade Top"] = "Interface\\AddOns\\SenseiClassResourceBar\\Textures\\BarForegrounds\\fade-top.png",
@@ -94,6 +99,16 @@ local availableForegroundStyles = {}
 for name, _ in pairs(foregroundStyles) do
     table.insert(availableForegroundStyles, { text = name })
 end
+
+-- Power types that should show discrete ticks
+local tickedPowerTypes = {
+    [Enum.PowerType.ComboPoints] = true,
+    [Enum.PowerType.HolyPower] = true,
+    [Enum.PowerType.SoulShards] = true,
+    [Enum.PowerType.Runes] = true,
+    [Enum.PowerType.Essence] = true,
+    [Enum.PowerType.Chi] = true,
+}
 
 ------------------------------------------------------------
 -- BAR CONFIGURATION
@@ -146,7 +161,7 @@ barConfigs.primary = {
     getValue = function(resource, config, data)
         local current = UnitPower("player", resource)
         local max = UnitPowerMax("player", resource)
-        if max == 0 then return nil, nil, nil, nil end
+        if max <= 0 then return nil, nil, nil, nil end
 
         if data.showManaAsPercent and resource == Enum.PowerType.Mana then
             return max, current, UnitPowerPercent("player", resource, false, true), "percent"
@@ -157,7 +172,7 @@ barConfigs.primary = {
     lemSettings = function(dbName, defaults, frame)
         return {
             {
-                order = 8,
+                order = 41,
                 name = "Show Mana As Percent",
                 kind = LEM.SettingType.Checkbox,
                 default = defaults.showManaAsPercent,
@@ -183,18 +198,20 @@ barConfigs.secondary = {
         point = "CENTER",
         x = 0,
         y = -40,
+        showTicks = true,
+        tickWidth = 1,
     },
     getResource = function()
         local _, class = UnitClass("player")
         local secondaryResources = {
             ["PALADIN"]     = Enum.PowerType.HolyPower,
-            ["MONK"]        = nil, -- Though code
+            ["MONK"]        = nil, -- Through code
             ["ROGUE"]       = Enum.PowerType.ComboPoints,
             ["DEATHKNIGHT"] = Enum.PowerType.Runes,
             ["WARLOCK"]     = Enum.PowerType.SoulShards,
-            ["SHAMAN"]      = nil, -- Though code
+            ["SHAMAN"]      = nil, -- Through code
             ["EVOKER"]      = Enum.PowerType.Essence,
-            ["DRUID"]       = nil, -- Though code
+            ["DRUID"]       = nil, -- Through code
         }
 
         local specID = GetSpecialization()
@@ -224,7 +241,7 @@ barConfigs.secondary = {
         -- Druid: form-based
         if class == "DRUID" then
             local form = GetShapeshiftFormID()
-            if form == 1 then
+            if form == 1 then -- Cat form
                 return Enum.PowerType.ComboPoints
             else
                 return nil
@@ -246,12 +263,50 @@ barConfigs.secondary = {
         -- Regular secondary resource types
         local current = UnitPower("player", resource)
         local max = UnitPowerMax("player", resource)
-        if max == 0 then return nil, nil, nil, nil end
+        if max <= 0 then return nil, nil, nil, nil end
 
         return max, current, current, "number"
     end,
     lemSettings = function(dbName, defaults, frame)
-        return {}
+        return {
+            {
+                order = 42,
+                name = "Show Ticks when available",
+                kind = LEM.SettingType.Checkbox,
+                default = defaults.showTicks,
+                get = function(layoutName)
+                    local data = SenseiClassResourceBarDB[dbName][layoutName]
+                    if data and data.showTicks ~= nil then
+                        return data.showTicks
+                    else
+                        return defaults.showTicks
+                    end
+                end,
+                set = function(layoutName, value)
+                    SenseiClassResourceBarDB[dbName][layoutName] = SenseiClassResourceBarDB[dbName][layoutName] or CopyTable(defaults)
+                    SenseiClassResourceBarDB[dbName][layoutName].showTicks = value
+                    frame:UpdateTicks(layoutName)
+                end,
+            },
+            {
+                order = 43,
+                name = "Tick Width",
+                kind = LEM.SettingType.Slider,
+                default = defaults.tickWidth,
+                minValue = 1,
+                maxValue = 5,
+                valueStep = 1,
+                get = function(layoutName)
+                    local data = SenseiClassResourceBarDB[dbName][layoutName]
+                    return data and data.tickWidth or defaults.tickWidth
+                end,
+                set = function(layoutName, value)
+                    SenseiClassResourceBarDB[dbName][layoutName] = SenseiClassResourceBarDB[dbName][layoutName] or CopyTable(defaults)
+                    SenseiClassResourceBarDB[dbName][layoutName].tickWidth = value
+                    frame:UpdateTicks(layoutName)
+                end,
+            },
+        }
     end,
 }
 
@@ -405,6 +460,53 @@ local function CreateBarInstance(config, parent)
         self.border:SetTexture(style.border)
     end
 
+    function frame:UpdateTicks(layoutName, resource, max)
+        layoutName = layoutName or LEM.GetActiveLayoutName() or "Default"
+        resource = resource or self.config.getResource()
+        max = max or (resource ~= "STAGGER" and UnitPowerMax("player", resource)) or 0
+
+        local data = SenseiClassResourceBarDB[self.config.dbName][layoutName]
+        if not data then return end
+
+        local defaults = CopyTable(commonDefaults)
+        for k, v in pairs(self.config.defaultValues or {}) do
+            defaults[k] = v
+        end
+
+        -- Arbitrarily show 4 ticks for edit mode for preview, if spec does not support it
+        if self._inEditMode and data.showTicks == true and resource ~= "STAGGER" and not tickedPowerTypes[resource] then
+            max = 5
+            resource = Enum.PowerType.ComboPoints
+        end
+
+        self.ticks = self.ticks or {}
+        if data.showTicks == false or not tickedPowerTypes[resource] then
+            for _, t in ipairs(self.ticks) do
+                t:Hide()
+            end
+            return
+        end
+
+        local width = self.statusBar:GetWidth()
+        local height = self.statusBar:GetHeight()
+        if width <= 0 or height <= 0 then return end
+
+        local needed = max - 1
+        for i = 1, needed do
+            local t = self.ticks[i]
+            if not t then
+                t = self:CreateTexture(nil, "OVERLAY")
+                t:SetColorTexture(0, 0, 0, 1)
+                self.ticks[i] = t
+            end
+            t:SetSize(data.tickWidth or 1, height)
+            local x = (i / max) * width
+            t:ClearAllPoints()
+            t:SetPoint("LEFT", self.statusBar, "LEFT", x - 0.5, 0)
+            t:Show()
+        end
+    end
+
     function frame:ApplyBackgroundSettings(layoutName)
         layoutName = layoutName or LEM.GetActiveLayoutName() or "Default"
         local data = SenseiClassResourceBarDB[self.config.dbName][layoutName]
@@ -524,6 +626,10 @@ local function CreateBarInstance(config, parent)
         self:ApplyMaskAndBorderSettings(layoutName)
         self:ApplyBackgroundSettings(layoutName)
         self:ApplyForegroundSettings(layoutName)
+        
+        if data.showTicks == true then
+            self:UpdateTicks(layoutName)
+        end
 
         if data.smoothProgress then
             self:EnableSmoothProgress()
@@ -544,8 +650,9 @@ local function CreateBarInstance(config, parent)
     frame:SetScript("OnEvent", function(self, event, arg1)
         if event == "PLAYER_ENTERING_WORLD"
             or event == "UPDATE_SHAPESHIFT_FORM"
-            or event == "PLAYER_SPECIALIZATION_CHANGED"then
+            or event == "PLAYER_SPECIALIZATION_CHANGED" then
 
+            self:ApplyLayout()
             self:ApplyVisibilitySettings()
             self:UpdateDisplay()
          
@@ -555,7 +662,12 @@ local function CreateBarInstance(config, parent)
                 self:UpdateDisplay()
 
         elseif (event == "UNIT_POWER_UPDATE" or event == "UNIT_MAXPOWER") and arg1 == "player" then
+
             self:UpdateDisplay()
+            if event == "UNIT_MAXPOWER" then
+                self:UpdateTicks()
+            end
+            
         end
     end)
 
@@ -595,7 +707,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 2,
+            order = 10,
             name = "Bar Size",
             kind = LEM.SettingType.Slider,
             default = defaults.scale,
@@ -616,7 +728,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 3,
+            order = 11,
             name = "Width",
             kind = LEM.SettingType.Slider,
             default = defaults.width,
@@ -634,7 +746,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 4,
+            order = 12,
             name = "Height",
             kind = LEM.SettingType.Slider,
             default = defaults.height,
@@ -652,7 +764,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 5,
+            order = 20,
             name = "Smooth Progress",
             kind = LEM.SettingType.Checkbox,
             default = defaults.smoothProgress,
@@ -671,7 +783,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 6,
+            order = 30,
             name = "Hide When Not In Combat",
             kind = LEM.SettingType.Checkbox,
             default = defaults.hideOutOfCombat,
@@ -685,7 +797,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 7,
+            order = 40,
             name = "Show Resource Number",
             kind = LEM.SettingType.Checkbox,
             default = defaults.showText,
@@ -700,11 +812,11 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 9,
+            order = 50,
             name = "Font Face",
             kind = LEM.SettingType.Dropdown,
             default = defaults.font,
-            values = availableFonts,
+            values = fontStyles,
             get = function(layoutName)
                 return (SenseiClassResourceBarDB[config.dbName][layoutName] and SenseiClassResourceBarDB[config.dbName][layoutName].font) or defaults.font
             end,
@@ -715,7 +827,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 10,
+            order = 51,
             name = "Font Size",
             kind = LEM.SettingType.Slider,
             default = defaults.fontSize,
@@ -733,11 +845,11 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 11,
+            order = 52,
             name = "Font Outline",
             kind = LEM.SettingType.Dropdown,
             default = defaults.fontOutline,
-            values = availableOutlines,
+            values = outlineStyles,
             get = function(layoutName)
                 return (SenseiClassResourceBarDB[config.dbName][layoutName] and SenseiClassResourceBarDB[config.dbName][layoutName].fontOutline) or defaults.fontOutline
             end,
@@ -748,7 +860,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 12,
+            order = 60,
             name = "Mask & Border Style",
             kind = LEM.SettingType.Dropdown,
             default = defaults.maskAndBorderStyle,
@@ -763,7 +875,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 13,
+            order = 61,
             name = "Background Style",
             kind = LEM.SettingType.Dropdown,
             default = defaults.backgroundStyle,
@@ -778,7 +890,7 @@ local function BuildLemSettings(config, frame)
             end,
         },
         {
-            order = 14,
+            order = 62,
             name = "Foreground Style",
             kind = LEM.SettingType.Dropdown,
             default = defaults.foregroundStyle,
@@ -836,7 +948,9 @@ local function InitializeBar(config)
 
     LEM:RegisterCallback("enter", function()
         frame._inEditMode = true
-        frame:Show()
+        frame:ApplyLayout()
+        frame:ApplyVisibilitySettings()
+        frame:UpdateDisplay()
     end)
 
     LEM:RegisterCallback("exit", function()
