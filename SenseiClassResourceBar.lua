@@ -102,12 +102,12 @@ end
 
 -- Power types that should show discrete ticks
 local tickedPowerTypes = {
-    [Enum.PowerType.ComboPoints] = true,
-    [Enum.PowerType.HolyPower] = true,
-    [Enum.PowerType.SoulShards] = true,
-    [Enum.PowerType.Runes] = true,
-    [Enum.PowerType.Essence] = true,
     [Enum.PowerType.Chi] = true,
+    [Enum.PowerType.ComboPoints] = true,
+    [Enum.PowerType.Essence] = true,
+    [Enum.PowerType.HolyPower] = true,
+    [Enum.PowerType.Runes] = true,
+    [Enum.PowerType.SoulShards] = true,
 }
 
 ------------------------------------------------------------
@@ -128,18 +128,18 @@ barConfigs.primary = {
     getResource = function()
         local _, playerClass = UnitClass("player")
         local classResources = {
-            ["WARRIOR"]     = Enum.PowerType.Rage,
-            ["PALADIN"]     = Enum.PowerType.Mana,
-            ["HUNTER"]      = Enum.PowerType.Focus,
-            ["ROGUE"]       = Enum.PowerType.Energy,
-            ["PRIEST"]      = Enum.PowerType.Mana,
             ["DEATHKNIGHT"] = Enum.PowerType.RunicPower,
-            ["SHAMAN"]      = Enum.PowerType.Mana,
-            ["MAGE"]        = Enum.PowerType.Mana,
-            ["WARLOCK"]     = Enum.PowerType.Mana,
-            ["MONK"]        = Enum.PowerType.Energy,
-            ["DRUID"]       = Enum.PowerType.Mana,
             ["DEMONHUNTER"] = Enum.PowerType.Fury,
+            ["DRUID"]       = Enum.PowerType.Mana,
+            ["HUNTER"]      = Enum.PowerType.Focus,
+            ["MAGE"]        = Enum.PowerType.Mana,
+            ["MONK"]        = Enum.PowerType.Energy,
+            ["PALADIN"]     = Enum.PowerType.Mana,
+            ["PRIEST"]      = Enum.PowerType.Mana,
+            ["ROGUE"]       = Enum.PowerType.Energy,
+            ["SHAMAN"]      = Enum.PowerType.Mana,
+            ["WARLOCK"]     = Enum.PowerType.Mana,
+            ["WARRIOR"]     = Enum.PowerType.Rage,
         }
 
         -- Druid: form-based
@@ -204,15 +204,16 @@ barConfigs.secondary = {
     getResource = function()
         local _, class = UnitClass("player")
         local secondaryResources = {
-            ["PALADIN"]     = Enum.PowerType.HolyPower,
-            ["MONK"]        = nil, -- Through code
-            ["ROGUE"]       = Enum.PowerType.ComboPoints,
             ["DEATHKNIGHT"] = Enum.PowerType.Runes,
-            ["WARLOCK"]     = Enum.PowerType.SoulShards,
-            ["SHAMAN"]      = nil, -- Through code
-            ["EVOKER"]      = Enum.PowerType.Essence,
             ["DRUID"]       = nil, -- Through code
+            ["EVOKER"]      = Enum.PowerType.Essence,
+            ["MAGE"]        = nil, -- Through code
+            ["MONK"]        = nil, -- Through code
+            ["PALADIN"]     = Enum.PowerType.HolyPower,
             ["PRIEST"]      = nil, -- Through code
+            ["ROGUE"]       = Enum.PowerType.ComboPoints,
+            ["SHAMAN"]      = nil, -- Through code
+            ["WARLOCK"]     = Enum.PowerType.SoulShards,
         }
 
         local specID = GetSpecialization()
@@ -255,6 +256,16 @@ barConfigs.secondary = {
             if spec == 258 then -- Shadow
                 return Enum.PowerType.Insanity
             else -- Discipline / Holy
+                return nil
+            end
+        end
+
+        -- Mage: spec-based
+        if class == "MAGE" then
+            local spec = GetSpecializationInfo(specID)
+            if spec == 64 then -- Arcane
+                return Enum.PowerType.ArcaneCharges
+            else -- Fire / Frost
                 return nil
             end
         end
