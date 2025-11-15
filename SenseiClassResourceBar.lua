@@ -874,6 +874,8 @@ local function CreateBarInstance(config, parent)
         else
             self:Show()
         end
+
+        self:ApplyTextVisibilitySettings(layoutName)
     end
 
     function frame:ApplyTextVisibilitySettings(layoutName)
