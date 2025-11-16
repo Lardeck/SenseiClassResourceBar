@@ -889,16 +889,17 @@ local function CreateBarInstance(config, parent)
             defaults[k] = v
         end
 
+        local scale = data.scale or defaults.scale
         local font = data.font or defaults.font
         local size = data.fontSize or defaults.fontSize
         local outline = data.fontOutline or defaults.fontOutline
 
-        self.textValue:SetFont(font, size, outline)
+        self.textValue:SetFont(font, size * scale, outline)
         self.textValue:SetShadowColor(0, 0, 0, 0.8)
         self.textValue:SetShadowOffset(1, -1)
 
         for _, fragmentedPowerBarText in ipairs(self.fragmentedPowerBarTexts) do
-            fragmentedPowerBarText:SetFont(font, math.max(6, size - 2), outline)
+            fragmentedPowerBarText:SetFont(font, math.max(6, size - 2) * scale, outline)
             fragmentedPowerBarText:SetShadowColor(0, 0, 0, 0.8)
             fragmentedPowerBarText:SetShadowOffset(1, -1)
         end
