@@ -291,7 +291,7 @@ barConfigs.secondary = {
         y = -40,
         hideBlizzardSecondaryResourceUi = false,
         showTicks = true,
-        tickWidth = 1,
+        tickThickness = 1,
     },
     getResource = function()
         local playerClass = select(2, UnitClass("player"))
@@ -455,19 +455,19 @@ barConfigs.secondary = {
             },
             {
                 order = 43,
-                name = "Tick Width",
+                name = "Tick Thickness",
                 kind = LEM.SettingType.Slider,
-                default = defaults.tickWidth,
+                default = defaults.tickThickness,
                 minValue = 1,
                 maxValue = 5,
                 valueStep = 1,
                 get = function(layoutName)
                     local data = SenseiClassResourceBarDB[dbName][layoutName]
-                    return data and data.tickWidth or defaults.tickWidth
+                    return data and data.tickThickness or defaults.tickThickness
                 end,
                 set = function(layoutName, value)
                     SenseiClassResourceBarDB[dbName][layoutName] = SenseiClassResourceBarDB[dbName][layoutName] or CopyTable(defaults)
-                    SenseiClassResourceBarDB[dbName][layoutName].tickWidth = value
+                    SenseiClassResourceBarDB[dbName][layoutName].tickThickness = value
                     frame:UpdateTicks(layoutName)
                 end,
             },
@@ -944,10 +944,10 @@ local function CreateBarInstance(config, parent)
                 t:SetColorTexture(0, 0, 0, 1)
                 self.ticks[i] = t
             end
-            t:SetSize(data.tickWidth or 1, height)
+            t:SetSize(data.tickThickness or 1, height)
             local x = (i / max) * width
             t:ClearAllPoints()
-            t:SetPoint("LEFT", self.statusBar, "LEFT", x - 0.5, 0)
+            t:SetPoint("LEFT", self.statusBar, "LEFT", x - (data.tickThickness or 1) / 2, 0)
             t:Show()
         end
 
