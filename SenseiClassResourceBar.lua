@@ -216,10 +216,13 @@ barConfigs.primary = {
             ["DEMONHUNTER"] = Enum.PowerType.Fury,
             ["DRUID"]       = {
                 [0]   = Enum.PowerType.Mana, -- Human
-                [1]   = Enum.PowerType.Energy, -- Cat
-                [5]   = Enum.PowerType.Rage, -- Bear
-                [27]  = Enum.PowerType.Mana, -- Travel
-                [31]  = Enum.PowerType.LunarPower, -- Moonkin
+                [DRUID_BEAR_FORM]       = Enum.PowerType.Rage,
+                [DRUID_CAT_FORM]        = Enum.PowerType.Energy,
+                [DRUID_TRAVEL_FORM]     = Enum.PowerType.Mana,
+                [DRUID_ACQUATIC_FORM]   = Enum.PowerType.Mana,
+                [DRUID_FLIGHT_FORM]     = Enum.PowerType.Mana,
+                [DRUID_MOONKIN_FORM_1]  = Enum.PowerType.LunarPower,
+                [DRUID_MOONKIN_FORM_2]  = Enum.PowerType.LunarPower,
             },
             ["EVOKER"]      = Enum.PowerType.Mana,
             ["HUNTER"]      = Enum.PowerType.Focus,
@@ -318,7 +321,7 @@ barConfigs.primary = {
                 set = function(layoutName, value)
                     SenseiClassResourceBarDB[dbName][layoutName] = SenseiClassResourceBarDB[dbName][layoutName] or CopyTable(defaults)
                     SenseiClassResourceBarDB[dbName][layoutName].useResourceAtlas = value
-                    frame:ApplyForegroundSettings(layoutName)
+                    frame:ApplyLayout(layoutName)
                 end,
             },
         }
@@ -348,8 +351,9 @@ barConfigs.secondary = {
                 [1480] = "SOUL_FRAGMENTS", -- Devourer
             },
             ["DRUID"]       = {
-                [1]    = Enum.PowerType.ComboPoints, -- Cat
-                [31]   = Enum.PowerType.Mana, -- Moonkin
+                [DRUID_CAT_FORM]        = Enum.PowerType.ComboPoints,
+                [DRUID_MOONKIN_FORM_1]  = Enum.PowerType.Mana,
+                [DRUID_MOONKIN_FORM_2]  = Enum.PowerType.Mana,
             },
             ["EVOKER"]      = Enum.PowerType.Essence,
             ["HUNTER"]      = nil,
@@ -401,11 +405,15 @@ barConfigs.secondary = {
             if not PlayerFrame:IsShown() then return nil, nil, nil, nil end
 
             local current = DemonHunterSoulFragmentsBar:GetValue() 
-            local _, max = DemonHunterSoulFragmentsBar:GetMinMaxValues() -- Secret values
+            local max = select(2, DemonHunterSoulFragmentsBar:GetMinMaxValues()) -- Secret values
 
             if not frame._SCRB_Soul_Fragments_hooked then
-                hooksecurefunc(DemonHunterSoulFragmentsBar, "SetValue", function()
-                    frame:UpdateDisplay()
+                frame:SetScript("OnUpdate", function(_, delta)
+                    frame.elapsed = frame.elapsed + delta
+                    if frame.elapsed >= (frame.smoothEnabled and 0.05 or 2) then
+                        frame.elapsed = 0
+                        frame:UpdateDisplay()
+                    end
                 end)
 
                 frame._SCRB_Soul_Fragments_hooked = true
@@ -419,6 +427,18 @@ barConfigs.secondary = {
             local max = UnitPowerMax("player", resource)
             if max <= 0 then return nil, nil, nil, nil end
             
+            if not frame._SCRB_Runes_hooked then
+                frame:SetScript("OnUpdate", function(_, delta)
+                    frame.elapsed = (frame.elapsed or 0) + delta
+                    if frame.elapsed >= (frame.smoothEnabled and 0.05 or 2) then
+                        frame.elapsed = 0
+                        frame:UpdateDisplay()
+                    end
+                end)
+
+                frame._SCRB_Runes_hooked = true
+            end
+
             for i = 1, max do
                 local runeReady = select(3, GetRuneCooldown(i))
                 if runeReady then
@@ -541,7 +561,7 @@ barConfigs.secondary = {
                 set = function(layoutName, value)
                     SenseiClassResourceBarDB[dbName][layoutName] = SenseiClassResourceBarDB[dbName][layoutName] or CopyTable(defaults)
                     SenseiClassResourceBarDB[dbName][layoutName].useResourceAtlas = value
-                    frame:ApplyForegroundSettings(layoutName)
+                    frame:ApplyLayout(layoutName)
                 end,
             },
         }
@@ -608,11 +628,15 @@ barConfigs.tertiary = {
             if not PlayerFrame:IsShown() then return nil, nil, nil, nil end
 
             local current = EvokerEbonMightBar:GetValue() 
-            local _, max = EvokerEbonMightBar:GetMinMaxValues() -- Secret values
+            local max = select(2, EvokerEbonMightBar:GetMinMaxValues()) -- Secret values
 
             if not frame._SCRB_Ebon_Might_hooked then
-                hooksecurefunc(EvokerEbonMightBar, "SetValue", function()
-                    frame:UpdateDisplay()
+                frame:SetScript("OnUpdate", function(_, delta)
+                    frame.elapsed = (frame.elapsed or 0) + delta
+                    if frame.elapsed >= (frame.smoothEnabled and 0.05 or 2) then
+                        frame.elapsed = 0
+                        frame:UpdateDisplay()
+                    end
                 end)
 
                 frame._SCRB_Ebon_Might_hooked = true
@@ -649,7 +673,7 @@ barConfigs.tertiary = {
                 set = function(layoutName, value)
                     SenseiClassResourceBarDB[dbName][layoutName] = SenseiClassResourceBarDB[dbName][layoutName] or CopyTable(defaults)
                     SenseiClassResourceBarDB[dbName][layoutName].useResourceAtlas = value
-                    frame:ApplyForegroundSettings(layoutName)
+                    frame:ApplyLayout(layoutName)
                 end,
             },
         }
@@ -1000,7 +1024,7 @@ local function CreateBarInstance(config, parent, frameLevel)
         end
 
         -- If not custum, try with power name or id
-        return color or GetPowerBarColor(powerName) or GetPowerBarColor(resource) or GetPowerBarColor("MANA")
+        return color or GetPowerBarColor(powerName) or GetPowerBarColor(resource) or { r = 1, g = 1, b = 1 }
     end
 
     function frame:UpdateDisplay(layoutName)
@@ -1015,8 +1039,7 @@ local function CreateBarInstance(config, parent, frameLevel)
             if not LEM:IsInEditMode() then
                 self:Hide()
             else 
-                -- White bar, "4" text for edit mode is resource does not exist (e.g. Secondary resource for warrior)
-                self.StatusBar:SetStatusBarColor(1, 1, 1)
+                -- "4" text for edit mode is resource does not exist (e.g. Secondary resource for warrior)
                 self.StatusBar:SetMinMaxValues(0, 5)
                 self.TextValue:SetText("4")
                 self.StatusBar:SetValue(4)
@@ -1449,13 +1472,13 @@ local function CreateBarInstance(config, parent, frameLevel)
             if f and playerClass == class then
                 if data.hideBlizzardSecondaryResourceUi then
                     if LEM:IsInEditMode() then
-                        if class ~= "DRUID" or (class == "DRUID" and GetShapeshiftFormID() == 1) then
+                        if class ~= "DRUID" or (class == "DRUID" and GetShapeshiftFormID() == DRUID_CAT_FORM) then
                             f:Show()
                         end
                     else 
                         f:Hide()
                     end
-                elseif class ~= "DRUID" or (class == "DRUID" and GetShapeshiftFormID() == 1) then
+                elseif class ~= "DRUID" or (class == "DRUID" and GetShapeshiftFormID() == DRUID_CAT_FORM) then
                     f:Show()
                 end
             end
@@ -1994,7 +2017,7 @@ local function BuildLemSettings(config, frame)
             set = function(layoutName, value)
                 SenseiClassResourceBarDB[config.dbName][layoutName] = SenseiClassResourceBarDB[config.dbName][layoutName] or CopyTable(defaults)
                 SenseiClassResourceBarDB[config.dbName][layoutName].backgroundStyle = value
-                frame:ApplyBackgroundSettings(layoutName)
+                frame:ApplyLayout(layoutName)
             end,
         },
         {
@@ -2063,7 +2086,7 @@ local function BuildLemSettings(config, frame)
             set = function(layoutName, value)
                 SenseiClassResourceBarDB[config.dbName][layoutName] = SenseiClassResourceBarDB[config.dbName][layoutName] or CopyTable(defaults)
                 SenseiClassResourceBarDB[config.dbName][layoutName].foregroundStyle = value
-                frame:ApplyForegroundSettings(layoutName)
+                frame:ApplyLayout(layoutName)
             end,
         },
     }
