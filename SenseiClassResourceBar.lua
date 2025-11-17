@@ -409,7 +409,7 @@ barConfigs.secondary = {
 
             if not frame._SCRB_Soul_Fragments_hooked then
                 frame:SetScript("OnUpdate", function(_, delta)
-                    frame.elapsed = frame.elapsed + delta
+                    frame.elapsed = (frame.elapsed or 0) + delta
                     if frame.elapsed >= (frame.smoothEnabled and 0.05 or 2) then
                         frame.elapsed = 0
                         frame:UpdateDisplay()
@@ -567,7 +567,6 @@ barConfigs.secondary = {
         }
     end,
 }
-
 
 -- TERTIARY RESOURCE BAR
 barConfigs.tertiary = {
