@@ -1494,9 +1494,9 @@ local function CreateBarInstance(config, parent, frameLevel)
                 end
             end
 
-            v:HookScript("OnSizeChanged", hookEssentialCooldowns)
-            v:HookScript("OnShow", hookEssentialCooldowns)
-            v:HookScript("OnHide", hookEssentialCooldowns)
+            hooksecurefunc(v, "SetSize", hookEssentialCooldowns)
+            hooksecurefunc(v, "Show", hookEssentialCooldowns)
+            hooksecurefunc(v, "Hide", hookEssentialCooldowns)
 
             self._SCRB_Essential_hooked = true
         end
@@ -1513,9 +1513,9 @@ local function CreateBarInstance(config, parent, frameLevel)
                 end
             end
 
-            v:HookScript("OnSizeChanged", hookUtilityCooldowns)
-            v:HookScript("OnShow", hookUtilityCooldowns)
-            v:HookScript("OnHide", hookUtilityCooldowns)
+            hooksecurefunc(v, "SetSize", hookUtilityCooldowns)
+            hooksecurefunc(v, "Show", hookUtilityCooldowns)
+            hooksecurefunc(v, "Hide", hookUtilityCooldowns)
 
             self._SCRB_Utility_hooked = true
         end
