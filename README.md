@@ -27,15 +27,13 @@ Mana, Rage, Energy, Focus, Fury, Runic Power, Astral Power, and more.
 *   **Monk** → Chi / **Stagger** (Brewmaster)
 *   **Warlock** → Soul Shards (shows partial resource)
 *   **Death Knight** → Runes (with cooldown timers per rune)
-*   **Shaman** → Maelstrom (Elemental)
 *   **Evoker** → Essence
 *   **Mage** → Arcane Charges
-*   **Priest** → Insanity (Shadow)
 *   **Druid** → Combo Points (Cat Form)
 *   **Demon Hunter** → Soul (Devourer)
 
 **Druid Form Adaptive Support:**  
-Automatically switches to Mana, Energy, Rage, or Lunar Power depending on current shapeshift form.
+Automatically switches to Mana, Energy, Rage, or Astral Power depending on current shapeshift form.
 
 ***
 
