@@ -214,7 +214,13 @@ barConfigs.primary = {
         local primaryResources = {
             ["DEATHKNIGHT"] = Enum.PowerType.RunicPower,
             ["DEMONHUNTER"] = Enum.PowerType.Fury,
-            ["DRUID"]       = nil, -- Through code
+            ["DRUID"]       = {
+                [0]   = Enum.PowerType.Mana, -- Human
+                [1]   = Enum.PowerType.Energy, -- Cat
+                [5]   = Enum.PowerType.Rage, -- Bear
+                [27]  = Enum.PowerType.Mana, -- Travel
+                [31]  = Enum.PowerType.LunarPower, -- Moonkin
+            },
             ["EVOKER"]      = Enum.PowerType.Mana,
             ["HUNTER"]      = Enum.PowerType.Focus,
             ["MAGE"]        = Enum.PowerType.Mana,
@@ -224,9 +230,17 @@ barConfigs.primary = {
                 [270] = Enum.PowerType.Mana, -- Mistweaver
             },
             ["PALADIN"]     = Enum.PowerType.Mana,
-            ["PRIEST"]      = Enum.PowerType.Mana,
+            ["PRIEST"]      = {
+                [256] = Enum.PowerType.Mana, -- Disciple
+                [257] = Enum.PowerType.Mana, -- Holy,
+                [258] = Enum.PowerType.Insanity, -- Shadow,
+            },
             ["ROGUE"]       = Enum.PowerType.Energy,
-            ["SHAMAN"]      = Enum.PowerType.Mana,
+            ["SHAMAN"]      = {
+                [262] = Enum.PowerType.Maelstrom, -- Elemental
+                [263] = Enum.PowerType.Mana, -- Enhancement
+                [264] = Enum.PowerType.Mana, -- Restoration
+            },
             ["WARLOCK"]     = Enum.PowerType.Mana,
             ["WARRIOR"]     = Enum.PowerType.Rage,
         }
@@ -236,16 +250,8 @@ barConfigs.primary = {
 
         -- Druid: form-based
         if playerClass == "DRUID" then
-            local form = GetShapeshiftFormID()
-            if form == 5 then
-                return Enum.PowerType.Rage
-            elseif form == 1 then
-                return Enum.PowerType.Energy
-            elseif form == 31 then
-                return Enum.PowerType.LunarPower
-            else
-                return Enum.PowerType.Mana
-            end
+            local formID = GetShapeshiftFormID()
+            return primaryResources[playerClass][formID or 0]
         end
 
         if type(primaryResources[playerClass]) == "table" then
@@ -341,23 +347,26 @@ barConfigs.secondary = {
             ["DEMONHUNTER"] = {
                 [1480] = "SOUL", -- Devourer
             },
-            ["DRUID"]       = nil, -- Through code
+            ["DRUID"]       = {
+                [1]    = Enum.PowerType.ComboPoints, -- Cat
+                [31]   = Enum.PowerType.Mana, -- Moonkin
+            },
             ["EVOKER"]      = Enum.PowerType.Essence,
             ["HUNTER"]      = nil,
             ["MAGE"]        = {
-                [62] = Enum.PowerType.ArcaneCharges, -- Arcane
+                [62]   = Enum.PowerType.ArcaneCharges, -- Arcane
             },
             ["MONK"]        = {
-                [268] = "STAGGER", -- Brewmaster
-                [269] = Enum.PowerType.Chi, -- Windwalker
+                [268]  = "STAGGER", -- Brewmaster
+                [269]  = Enum.PowerType.Chi, -- Windwalker
             },
             ["PALADIN"]     = Enum.PowerType.HolyPower,
             ["PRIEST"]      = {
-                [258] = Enum.PowerType.Insanity, -- Shadow
+                [258]  = Enum.PowerType.Mana, -- Shadow
             },
             ["ROGUE"]       = Enum.PowerType.ComboPoints,
             ["SHAMAN"]      = {
-                [262] = Enum.PowerType.Maelstrom, -- Elemental
+                [262]  = Enum.PowerType.Mana, -- Elemental
             },
             ["WARLOCK"]     = Enum.PowerType.SoulShards,
             ["WARRIOR"]     = nil,
@@ -368,12 +377,8 @@ barConfigs.secondary = {
 
         -- Druid: form-based
         if playerClass == "DRUID" then
-            local form = GetShapeshiftFormID()
-            if form == 1 then -- Cat form
-                return Enum.PowerType.ComboPoints
-            else
-                return nil
-            end
+            local formID = GetShapeshiftFormID()
+            return secondaryResources[playerClass][formID or 0]
         end
 
         if type(secondaryResources[playerClass]) == "table" then
