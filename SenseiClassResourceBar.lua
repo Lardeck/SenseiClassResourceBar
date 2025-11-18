@@ -254,7 +254,7 @@ barConfigs.primary = {
         -- Druid: form-based
         if playerClass == "DRUID" then
             local formID = GetShapeshiftFormID()
-            return primaryResources[playerClass][formID or 0]
+            return primaryResources[playerClass] and primaryResources[playerClass][formID or 0]
         end
 
         if type(primaryResources[playerClass]) == "table" then
@@ -384,7 +384,7 @@ barConfigs.secondary = {
         -- Druid: form-based
         if playerClass == "DRUID" then
             local formID = GetShapeshiftFormID()
-            return secondaryResources[playerClass][formID or 0]
+            return secondaryResources[playerClass] and secondaryResources[playerClass][formID or 0]
         end
 
         if type(secondaryResources[playerClass]) == "table" then
@@ -600,6 +600,11 @@ barConfigs.tertiary = {
         y = -80,
         useResourceAtlas = false,
     },
+    allowEditPredicate = function()
+        local spec = C_SpecializationInfo.GetSpecialization()
+        local specID = C_SpecializationInfo.GetSpecializationInfo(spec)
+        return specID == 1473 -- Augmentation
+    end,
     loadPredicate = function()
         local playerClass = select(2, UnitClass("player"))
         return playerClass == "EVOKER"
@@ -611,7 +616,7 @@ barConfigs.tertiary = {
             ["DEMONHUNTER"] = nil,
             ["DRUID"]       = nil,
             ["EVOKER"]      = {
-                [1473] = "EBON_MIGHT",
+                [1473] = "EBON_MIGHT", -- Augmentation
             },
             ["HUNTER"]      = nil,
             ["MAGE"]        = nil,
@@ -630,7 +635,7 @@ barConfigs.tertiary = {
         -- Druid: form-based
         if playerClass == "DRUID" then
             local formID = GetShapeshiftFormID()
-            return tertiaryResources[playerClass][formID or 0]
+            return tertiaryResources[playerClass] and tertiaryResources[playerClass][formID or 0]
         end
 
         if type(tertiaryResources[playerClass]) == "table" then
@@ -1392,8 +1397,14 @@ local function CreateBarInstance(config, parent, frameLevel)
         self:HideBlizzardPlayerContainer(layoutName)
         self:HideBlizzardSecondaryResource(layoutName)
 
-        -- Don't hide while in edit mode
+        -- Don't hide while in edit mode...
         if LEM:IsInEditMode() then
+            -- ...Unless config says otherwise
+            if type(self.config.allowEditPredicate) == "function" and self.config.allowEditPredicate(self) == false then
+                self:Hide()
+                return
+            end
+
             self:Show()
             return
         end
