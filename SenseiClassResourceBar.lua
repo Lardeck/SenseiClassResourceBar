@@ -241,7 +241,7 @@ barConfigs.primary = {
             ["ROGUE"]       = Enum.PowerType.Energy,
             ["SHAMAN"]      = {
                 [262] = Enum.PowerType.Maelstrom, -- Elemental
-                [263] = Enum.PowerType.Mana, -- Enhancement
+                [263] = nil, -- Enhancement
                 [264] = Enum.PowerType.Mana, -- Restoration
             },
             ["WARLOCK"]     = Enum.PowerType.Mana,
@@ -372,6 +372,7 @@ barConfigs.secondary = {
             ["ROGUE"]       = Enum.PowerType.ComboPoints,
             ["SHAMAN"]      = {
                 [262]  = Enum.PowerType.Mana, -- Elemental
+                [263] =  Enum.PowerType.Mana, -- Enhancement
             },
             ["WARLOCK"]     = Enum.PowerType.SoulShards,
             ["WARRIOR"]     = nil,
