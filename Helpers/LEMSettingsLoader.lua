@@ -60,7 +60,6 @@ local function BuildLemSettings(bar, defaults)
             name = "Position & Size",
             kind = LEM.SettingType.Collapsible,
             id = "Position & Size",
-            defaultCollapsed = true,
         },
         {
             parentId = "Position & Size",
