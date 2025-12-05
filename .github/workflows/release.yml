@@ -33,9 +33,9 @@ jobs:
           mkdir -p Libs
           curl -L "${{ steps.release.outputs.asset_url }}" -o LibEQOL.zip
 
-      - name: Extract into Libs/
+      - name: Extract into SenseiClassResourceBar/Libs/
         run: |
-          unzip -o LibEQOL.zip -d Libs
+          unzip -o LibEQOL.zip -d SenseiClassResourceBar/Libs
           rm LibEQOL.zip
 
       - name: Create Package and release
