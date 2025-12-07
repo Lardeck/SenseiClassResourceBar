@@ -35,6 +35,79 @@ addonTable.fullUpdateBars = function()
     end
 end
 
+addonTable.decodeImportString = function(importString)
+    local prefix, version, encoded = importString:match("^([^:]+):(%d+):(.+)$")
+    if prefix ~= addonName then
+        return nil, "This import string is not suitable for " .. addonName
+    end
+    if not version or version ~= tostring(EXPORT_VERSION) then
+        return nil, "This import string is meant for an older version of " .. addonName
+    end
+    if not encoded then
+        return nil, "Invalid import string"
+    end
+
+    local compressed = LibDeflate:DecodeForPrint(encoded)
+    if not compressed then
+        return nil, "Decode failed"
+    end
+
+    local serialized = LibDeflate:DecompressDeflate(compressed)
+    if not serialized then
+        return nil, "Decompression failed"
+    end
+
+    local success, data = LibSerialize:Deserialize(serialized)
+    if not success then
+        return nil, "Deserialization failed"
+    end
+
+    return data
+end
+
+addonTable.encodeDataAsString = function(data)
+    local serialized = LibSerialize:Serialize(data)
+    local compressed = LibDeflate:CompressDeflate(serialized, {level = 9})
+    local encoded = LibDeflate:EncodeForPrint(compressed)
+
+    return addonName .. ":" .. EXPORT_VERSION .. ":" .. encoded
+end
+
+addonTable.exportBarAsString = function(dbName)
+    local data = {
+        BARS = {},
+    }
+
+    local layoutName = LEM.GetActiveLayoutName() or "Default"
+    if dbName
+    and SenseiClassResourceBarDB
+    and SenseiClassResourceBarDB[dbName]
+    and SenseiClassResourceBarDB[dbName][layoutName] then
+        data.BARS[dbName] = SenseiClassResourceBarDB[dbName][layoutName] or nil
+    end
+
+    return addonTable.encodeDataAsString(data)
+end
+
+--- Can work with default global export string
+addonTable.importBarAsString = function(importString, dbName)
+    local data, errMsg = addonTable.decodeImportString(importString)
+    if not data or errMsg then
+        return nil, errMsg or "?"
+    end
+
+    if data.BARS[dbName] then
+        if not SenseiClassResourceBarDB then
+            SenseiClassResourceBarDB = {}
+        end
+
+        local layoutName = LEM.GetActiveLayoutName() or "Default"
+        SenseiClassResourceBarDB[dbName][layoutName] = data.BARS[dbName]
+    end
+
+    return data
+end
+
 addonTable.exportProfileAsString = function(includeBarSettings, includeAddonSettings)
     local data = {
         BARS = {},
@@ -60,38 +133,14 @@ addonTable.exportProfileAsString = function(includeBarSettings, includeAddonSett
         end
     end
 
-    local serialized = LibSerialize:Serialize(data)
-    local compressed = LibDeflate:CompressDeflate(serialized, {level = 9})
-    local encoded = LibDeflate:EncodeForPrint(compressed)
-
-    return addonName .. ":" .. EXPORT_VERSION .. ":" .. encoded
+    return addonTable.encodeDataAsString(data)
 end
 
+--- Can work with individual export string
 addonTable.importProfileFromString = function(importString)
-    local prefix, version, encoded = importString:match("^([^:]+):(%d+):(.+)$")
-    if prefix ~= addonName then
-        return nil, "This import string is not suitable for " .. addonName
-    end
-    if not version or version ~= tostring(EXPORT_VERSION) then
-        return nil, "This import string is meant for an older version of " .. addonName
-    end
-    if not encoded then
-        return nil, "Invalid import string"
-    end
-
-    local compressed = LibDeflate:DecodeForPrint(encoded)
-    if not compressed then
-        return nil, "Decode failed"
-    end
-
-    local serialized = LibDeflate:DecompressDeflate(compressed)
-    if not serialized then
-        return nil, "Decompression failed"
-    end
-
-    local success, data = LibSerialize:Deserialize(serialized)
-    if not success then
-        return nil, "Deserialization failed"
+    local data, errMsg = addonTable.decodeImportString(importString)
+    if not data or errMsg then
+        return nil, errMsg or "?"
     end
 
     local layoutName = LEM.GetActiveLayoutName() or "Default"

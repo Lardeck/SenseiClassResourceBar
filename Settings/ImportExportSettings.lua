@@ -15,6 +15,9 @@ addonTable.FeaturesMetadata[featureId] = {
 
 addonTable.SettingsPanelInitializers = addonTable.SettingsPanelInitializers or {}
 addonTable.SettingsPanelInitializers[featureId] = function(category)
+    SettingsLib:CreateText(category, "Export strings generated here encompass all bars of your current Edit Mode Layout.\nIf you wish to only export one bar in particular, please check the Export button in the Bar Settings panel in\nEdit Mode.")
+    SettingsLib:CreateText(category, "The Import button bellow supports global and individual bar export strings. The one in each Bar Settings in\nEdit Mode is restricted to this particular bar.\nFor example, if you exported all your bars but wish to only import the Primary Resource Bar, then use the\nImport button of the Primary Resource bar in Edit Mode.")
+
     SettingsLib:CreateButton(category, {
 		text = "Export Only Power Colors",
 		func = function()
@@ -23,17 +26,7 @@ addonTable.SettingsPanelInitializers[featureId] = function(category)
 				addonTable.prettyPrint("Export failed.")
 				return
 			end
-			StaticPopupDialogs["SCRB_EXPORT_SETTINGS"] = StaticPopupDialogs["SCRB_EXPORT_SETTINGS"]
-				or {
-					text = "Export",
-					button1 = CLOSE,
-					hasEditBox = true,
-					editBoxWidth = 320,
-					timeout = 0,
-					whileDead = true,
-					hideOnEscape = true,
-					preferredIndex = 3,
-				}
+
 			StaticPopupDialogs["SCRB_EXPORT_SETTINGS"].OnShow = function(self)
 				self:SetFrameStrata("TOOLTIP")
 				local editBox = self.editBox or self:GetEditBox()
@@ -53,17 +46,7 @@ addonTable.SettingsPanelInitializers[featureId] = function(category)
 				addonTable.prettyPrint("Export failed.")
 				return
 			end
-			StaticPopupDialogs["SCRB_EXPORT_SETTINGS"] = StaticPopupDialogs["SCRB_EXPORT_SETTINGS"]
-				or {
-					text = "Export",
-					button1 = CLOSE,
-					hasEditBox = true,
-					editBoxWidth = 320,
-					timeout = 0,
-					whileDead = true,
-					hideOnEscape = true,
-					preferredIndex = 3,
-				}
+
 			StaticPopupDialogs["SCRB_EXPORT_SETTINGS"].OnShow = function(self)
 				self:SetFrameStrata("TOOLTIP")
 				local editBox = self.editBox or self:GetEditBox()
@@ -83,17 +66,7 @@ addonTable.SettingsPanelInitializers[featureId] = function(category)
 				addonTable.prettyPrint("Export failed.")
 				return
 			end
-			StaticPopupDialogs["SCRB_EXPORT_SETTINGS"] = StaticPopupDialogs["SCRB_EXPORT_SETTINGS"]
-				or {
-					text = "Export",
-					button1 = CLOSE,
-					hasEditBox = true,
-					editBoxWidth = 320,
-					timeout = 0,
-					whileDead = true,
-					hideOnEscape = true,
-					preferredIndex = 3,
-				}
+
 			StaticPopupDialogs["SCRB_EXPORT_SETTINGS"].OnShow = function(self)
 				self:SetFrameStrata("TOOLTIP")
 				local editBox = self.editBox or self:GetEditBox()
@@ -108,28 +81,6 @@ addonTable.SettingsPanelInitializers[featureId] = function(category)
 	SettingsLib:CreateButton(category, {
 		text = "Import",
 		func = function()
-			StaticPopupDialogs["SCRB_IMPORT_SETTINGS"] = StaticPopupDialogs["SCRB_IMPORT_SETTINGS"]
-				or {
-					text = "Import",
-					button1 = OKAY,
-					button2 = CANCEL,
-					hasEditBox = true,
-					editBoxWidth = 320,
-					timeout = 0,
-					whileDead = true,
-					hideOnEscape = true,
-					preferredIndex = 3,
-				}
-			StaticPopupDialogs["SCRB_IMPORT_SETTINGS"].OnShow = function(self)
-				self:SetFrameStrata("TOOLTIP")
-				local editBox = self.editBox or self:GetEditBox()
-				editBox:SetText("")
-				editBox:SetFocus()
-			end
-			StaticPopupDialogs["SCRB_IMPORT_SETTINGS"].EditBoxOnEnterPressed = function(editBox)
-				local parent = editBox:GetParent()
-				if parent and parent.button1 then parent.button1:Click() end
-			end
 			StaticPopupDialogs["SCRB_IMPORT_SETTINGS"].OnAccept = function(self)
 				local editBox = self.editBox or self:GetEditBox()
 				local input = editBox:GetText() or ""
