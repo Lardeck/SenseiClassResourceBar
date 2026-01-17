@@ -439,6 +439,12 @@ function BarMixin:ApplyLayout(layoutName, force)
     local data = self:GetData(layoutName)
     if not data then return end
 
+    -- Init Fragmented Power Bars if needed
+    local resource = self:GetResource()
+    if addonTable.fragmentedPowerTypes[resource] then
+        self:CreateFragmentedPowerBars(layoutName)
+    end
+
     local defaults = self.defaults or {}
 
     local scale = data.scale or defaults.scale
@@ -476,9 +482,7 @@ function BarMixin:ApplyLayout(layoutName, force)
         self:DisableFasterUpdates()
     end
 
-    local resource = self:GetResource()
     if addonTable.fragmentedPowerTypes[resource] then
-        self:CreateFragmentedPowerBars(layoutName)
         self:UpdateFragmentedPowerDisplay(layoutName)
     else
         self.StatusBar:SetAlpha(1)
