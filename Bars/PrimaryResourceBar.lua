@@ -14,6 +14,7 @@ function PrimaryResourceBarMixin:GetResource()
             [0]   = Enum.PowerType.Mana, -- Human
             [DRUID_BEAR_FORM]       = Enum.PowerType.Rage,
             [DRUID_TREE_FORM]       = Enum.PowerType.Mana,
+            [36]                    = Enum.PowerType.Mana, -- Tome of the Wilds: Treant Form
             [DRUID_CAT_FORM]        = Enum.PowerType.Energy,
             [DRUID_TRAVEL_FORM]     = Enum.PowerType.Mana,
             [DRUID_ACQUATIC_FORM]   = Enum.PowerType.Mana,
