@@ -197,6 +197,11 @@ addonTable.getAvailableProfiles = function()
 end
 SCRB.getAvailableProfiles = addonTable.getAvailableProfiles
 
+addonTable.getCurrentProfileName = function()
+    return LEM.GetActiveLayoutName() or "Default"
+end
+SCRB.getCurrentProfileName = addonTable.getCurrentProfileName
+
 addonTable.prettyPrint = function(...)
   print("|cffb5a707"..addonName..":|r", ...)
 end
