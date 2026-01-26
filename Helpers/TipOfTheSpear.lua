@@ -48,6 +48,7 @@ function TipOfTheSpear:OnEvent(_, event, ...)
         return
     end
 
+    -- Gain 2 stacks from Takedown
     if spellID == TAKEDOWN_ID and C_SpellBook.IsSpellKnown(TWIN_FANG_ID) then
         tipStacks = math.min(self.TIP_MAX_STACKS, tipStacks + 2) -- Takedown auto consumes a stack it seems ?
         tipExpiresAt = GetTime() + TIP_DURATION

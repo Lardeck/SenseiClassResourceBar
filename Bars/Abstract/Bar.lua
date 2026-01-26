@@ -842,6 +842,8 @@ function BarMixin:UpdateTicksLayout(layoutName)
         max = 5
     elseif resource == "TIP_OF_THE_SPEAR" then
         max = addonTable.TipOfTheSpear.TIP_MAX_STACKS
+    elseif resource == "WHIRLWIND" then
+        max = addonTable.Whirlwind.IW_MAX_STACKS
     elseif resource == "SOUL_FRAGMENTS_VENGEANCE" then
         max = 6
     elseif type(resource) == "number" then

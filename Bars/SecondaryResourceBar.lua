@@ -10,6 +10,7 @@ function SecondaryResourceBarMixin:OnLoad()
 
     -- Modules for the special cases requiring more work
     addonTable.TipOfTheSpear:OnLoad(self)
+    addonTable.Whirlwind:OnLoad(self)
 end
 
 function SecondaryResourceBarMixin:OnEvent(event, ...)
@@ -17,6 +18,7 @@ function SecondaryResourceBarMixin:OnEvent(event, ...)
 
     -- Modules for the special cases requiring more work
     addonTable.TipOfTheSpear:OnEvent(self, event, ...)
+    addonTable.Whirlwind:OnEvent(self, event, ...)
 end
 
 function SecondaryResourceBarMixin:GetResource()
@@ -56,7 +58,9 @@ function SecondaryResourceBarMixin:GetResource()
             [263]  = "MAELSTROM_WEAPON", -- Enhancement
         },
         ["WARLOCK"]     = Enum.PowerType.SoulShards,
-        ["WARRIOR"]     = nil,
+        ["WARRIOR"]     = {
+            [72] = "WHIRLWIND",
+        },
     }
 
     local spec = C_SpecializationInfo.GetSpecialization()
@@ -152,6 +156,10 @@ function SecondaryResourceBarMixin:GetResourceValue(resource)
 
     if resource == "TIP_OF_THE_SPEAR" then
         return addonTable.TipOfTheSpear:GetStacks()
+    end
+
+    if resource == "WHIRLWIND" then
+        return addonTable.Whirlwind:GetStacks()
     end
 
     -- Regular secondary resource types
